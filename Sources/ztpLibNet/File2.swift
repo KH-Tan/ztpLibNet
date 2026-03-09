@@ -35,7 +35,7 @@ public class ztpDataService<T: Decodable> {
     //defer { isLoading = false }
 
     #if DEBUG
-    try? await Task.sleep(for: .seconds(2))
+    try? await Task.sleep(for: .seconds(1))
     #endif
 
     do {
