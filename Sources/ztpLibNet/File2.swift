@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 public class ztpDataService<T: Decodable> {
-  var data: T?
+  public var data: T?
 
   let urlString: String
   private let configurator: ((JSONDecoder) -> Void)?
@@ -18,12 +18,12 @@ public class ztpDataService<T: Decodable> {
   var networkError: ztpNetworkError? = nil
   var isLoading: Bool = false
 
-  init(urlString: String, configurator: ((JSONDecoder) -> Void)? = nil) {
+  public init(urlString: String, configurator: ((JSONDecoder) -> Void)? = nil) {
     self.urlString = urlString
     self.configurator = configurator
   }
 
-  func fetchData() async {
+  public func fetchData() async {
     isLoading = true
     networkError = nil
     defer { isLoading = false }
