@@ -7,16 +7,21 @@
 
 import Foundation
 
+public enum ztpLoadingState {
+  case idle, loading, loaded, failed
+}
+
 @Observable
 public class ztpDataService<T: Decodable> {
+  public var loadingState: ztpLoadingState = .idle //***
   public var data: T?
 
   let urlString: String
   private let configurator: ((JSONDecoder) -> Void)?
 
   private let netUtil = ztpNetworkUtility.self
-  var networkError: ztpNetworkError? = nil
-  var isLoading: Bool = false
+  public var networkError: ztpNetworkError? = nil
+  //var isLoading: Bool = false
 
   public init(urlString: String, configurator: ((JSONDecoder) -> Void)? = nil) {
     self.urlString = urlString
@@ -24,9 +29,10 @@ public class ztpDataService<T: Decodable> {
   }
 
   public func fetchData() async {
-    isLoading = true
+    loadingState = .loading //****
+    //isLoading = true
     networkError = nil
-    defer { isLoading = false }
+    //defer { isLoading = false }
 
     #if DEBUG
     try? await Task.sleep(for: .seconds(2))
@@ -37,12 +43,17 @@ public class ztpDataService<T: Decodable> {
         data = try await netUtil
           .fetchAndDecodeJSONthrows(from: urlString,
                                     configureDecoder: configurator)
+        if data != nil { loadingState = .loaded } //***
+
       } else {
         data = try await netUtil
           .fetchAndDecodeJSONthrows(from: urlString)
+        if data != nil { loadingState = .loaded } //***
+
       }
     } catch {
       networkError = error
+      loadingState = .failed //***
     }
   }
 }

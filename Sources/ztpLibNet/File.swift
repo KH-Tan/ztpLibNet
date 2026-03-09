@@ -8,42 +8,36 @@
 import Foundation
 
 
-
 public enum ztpTransportError: Error {
-  case offline, timedOut,
-       dnsFailure, tlsFailure,
+  case offline, timedOut, dnsFailure, tlsFailure,
        cannotConnect, cancelled, unknown
 
   init(urlError: URLError) {
 
     switch (urlError.code) {
-    case
-        .notConnectedToInternet,
-        .networkConnectionLost,
-        .dataNotAllowed:
+    case .notConnectedToInternet, .networkConnectionLost,
+         .dataNotAllowed:
       self = .offline
-    case
-        .timedOut:
-      self = .timedOut
-    case
-        .dnsLookupFailed,
-        .cannotFindHost:
-      self = .dnsFailure
-    case
-        .secureConnectionFailed,
-        .serverCertificateHasBadDate,
-        .serverCertificateUntrusted,
-        .serverCertificateHasUnknownRoot:
-      self = .tlsFailure
-    case
-        .cannotConnectToHost:
-      self = .cannotConnect
-    case
-        .cancelled:
-      self = .cancelled
-    default: self = .unknown
-    }
 
+    case .timedOut:
+      self = .timedOut
+
+    case .dnsLookupFailed, .cannotFindHost:
+      self = .dnsFailure
+
+    case .secureConnectionFailed, .serverCertificateHasBadDate,
+         .serverCertificateUntrusted, .serverCertificateHasUnknownRoot:
+      self = .tlsFailure
+
+    case .cannotConnectToHost:
+      self = .cannotConnect
+
+    case .cancelled:
+      self = .cancelled
+
+    default:
+      self = .unknown
+    }
   }
 
   var userMessage: String {
@@ -73,7 +67,7 @@ public enum ztpNetworkError: Error {
        httpStatusCode(Int),
        decodingError(String)
 
-  var userMessage: String {
+  public var userMessage: String {
     switch self {
     case .badURL: "URL error"
     case .transport(let transportError): transportError.userMessage
@@ -93,15 +87,19 @@ public enum ztpNetworkError: Error {
   }
 
 
-  var techFacingDescription: String {
+  public var techDescription: String {
     switch self {
-    case .badURL:                   "Invalid URL"
+    case .badURL:
+      "Invalid URL"
       //case .request(let message):     "Request error: \(message)"
-    case .transport(let transportError): transportError.userMessage
-    case .httpResponse:             "Network error: Response not HTTPURLResponse"
-    case .httpStatusCode(let code): "HTTP error: Status code \(code)"
-    case .decodingError:            "Decoding error"
-
+    case .transport(let transportError):
+      transportError.userMessage
+    case .httpResponse:
+      "Network error: Response not HTTPURLResponse"
+    case .httpStatusCode(let code):
+      "HTTP error: Status code \(code)"
+    case .decodingError(let detail):
+      detail
     }
   }
 
@@ -109,12 +107,8 @@ public enum ztpNetworkError: Error {
 
 
 public enum ztpNetworkUtility {
-  // ?????  @MainActor required
-  //@MainActor static let shared = ztpNetworkUtility()
 
-  //private init() {}
-  //public init() {}
-
+  // Throws
   static public func fetchAndDecodeJSONthrows<T: Decodable>(
     from urlString: String,
     configureDecoder: ((JSONDecoder)->Void)?=nil) async throws(ztpNetworkError)->T {
@@ -161,7 +155,7 @@ public enum ztpNetworkUtility {
     } // func
 
 
-
+  // Archived - Does not throw, only prints error
   static public func fetchAndDecodeJSON<T: Decodable>(
     from urlString: String,
     configureDecoder: ((JSONDecoder)->Void)?=nil) async->T? {
@@ -205,8 +199,6 @@ public enum ztpNetworkUtility {
         return nil
       }
 
-
-
     } // func
 
 
@@ -214,37 +206,55 @@ public enum ztpNetworkUtility {
     switch error {
     case .typeMismatch(let type, let context):
       """
-      Decoding Error: Type mismatch for type: \(type)
-      Context: \(context.debugDescription)  
-      Coding Path: \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
+      Decoding Error:
+      Type mismatch for Type '\(type)'
+      
+      Context:
+      \(context.debugDescription)  
+      
+      Coding Path:
+      \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
       """
     case .valueNotFound(let type, let context):
       """
-      Decoding Error: Value of Type '\(type)' not found
-      Context: \(context.debugDescription)  
-      Coding Path: \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
+      Decoding Error:
+      Value of Type '\(type)' not found
+      
+      Context:
+      \(context.debugDescription)  
+      
+      Coding Path:
+      \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
       """
     case .keyNotFound(let codingKey, let context):
       """
-      Decoding Error: Key '\(codingKey)' not found
-      Context: \(context.debugDescription)  
-      Coding Path: \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
+      Decoding Error:
+      Key '\(codingKey)' not found
+      
+      Context:
+      \(context.debugDescription)  
+      
+      Coding Path:
+      \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
       """
     case .dataCorrupted(let context):
       """
-      Context: \(context.debugDescription)  
-      Coding Path: \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
+      Data Corrupted:
+      
+      Context:
+      \(context.debugDescription)  
+      
+      Coding Path:
+      \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
       """
     @unknown default:
       """
-      Unknown error: \(error.localizedDescription)
+      Unknown error:
+      \(error.localizedDescription)
       """
 
     }
   } // func
-
-
-
 
 } // class
 
