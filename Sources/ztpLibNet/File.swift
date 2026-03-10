@@ -47,13 +47,13 @@ public enum ztpTransportError: Error {
     case .timedOut:
       "The request timed out. Please try again later."
     case .dnsFailure, .cannotConnect:
-      "Server cannot be reached. Please try again later."
+      "Server cannot be reached right now. Please try again later."
     case .tlsFailure:
       "A secure connection could not be established."
     case .cancelled:
       "The request was cancelled."
     case .unknown:
-      "Unknown error."
+      "An Unknown network error occurred. Please try again later."
     }
   }
 }
@@ -69,23 +69,26 @@ public enum ztpNetworkError: Error {
 
   public var userMessage: String {
     switch self {
-    case .badURL: "URL error"
-    case .transport(let transportError): transportError.userMessage
-    case .httpResponse: "HTTP response error"
+    case .badURL:
+      "URL error"
+    case .transport(let transportError):
+      transportError.userMessage
+    case .httpResponse:
+      "HTTP response error"
     case .httpStatusCode(let code):
       switch code {
       case 401: "Your session has expired. Please sign-in again."
       case 403: "You do not have permission for the requested action."
       case 404: "The requested resource could not be found."
-      case 429: "The Server is busy at the moment. Please wait and try again later."
+      case 429: "The Server has too many requests pending. Please wait and try again later."
       case 500...509: "The Server is not responding. Please try again later."
-      default: "Something went wrong. Code: \(code)"
+      default: "Something went wrong. Status Code: \(code)"
       }
-    case .decodingError: "Decoding error"
+    case .decodingError:
+      "Decoding error"
       //default: "Unknown Error Encountered"
     }
   }
-
 
   public var techDescription: String {
     switch self {
@@ -130,17 +133,15 @@ public enum ztpNetworkUtility {
         do {
           let decoder = JSONDecoder()
           configureDecoder?(decoder)
-          let decodedData = try decoder.decode(T.self, from: data)
-          return decodedData
+          let decoded = try decoder.decode(T.self, from: data)
+          return decoded
 
         } catch let error as DecodingError {
           throw ztpNetworkError.decodingError(decodingError(error: error))
         } catch {
           let errMsg = ("Data as string: \(String(data: data, encoding: .utf8) ?? "could not convert data to string")")
           throw ztpNetworkError.decodingError(errMsg)
-          //throw ztNetworkError.decodingError(error.localizedDescription)
         }
-
 
       } catch let networkError as ztpNetworkError {
         throw networkError
@@ -180,8 +181,8 @@ public enum ztpNetworkUtility {
         do {
           let decoder = JSONDecoder()
           configureDecoder?(decoder)
-          let decodedData = try decoder.decode(T.self, from: data)
-          return decodedData
+          let decoded = try decoder.decode(T.self, from: data)
+          return decoded
 
         } catch let error as DecodingError {
 
@@ -190,15 +191,14 @@ public enum ztpNetworkUtility {
 
         } catch {
           print("Decoding error: \(error.localizedDescription)")
-          print("Data as string: \(String(data: data, encoding: .utf8) ?? "could not convert data to string")")
+          print("Data as string: \(String(data: data, encoding: .utf8) ?? "cannot convert data to String")")
           return nil
         }
 
       } catch {
-        print("Request error: \(error)")
+        print("Request error: \(error.localizedDescription)")
         return nil
       }
-
     } // func
 
 
@@ -211,9 +211,8 @@ public enum ztpNetworkUtility {
       
       Context:
       \(context.debugDescription)  
-      
       Coding Path:
-      \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
+      \(context.codingPath.map{$0.stringValue}.joined(separator: "-> ")) 
       """
     case .valueNotFound(let type, let context):
       """
@@ -222,41 +221,42 @@ public enum ztpNetworkUtility {
       
       Context:
       \(context.debugDescription)  
-      
       Coding Path:
-      \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
+      \(context.codingPath.map{$0.stringValue}.joined(separator: "-> ")) 
       """
     case .keyNotFound(let codingKey, let context):
       """
       Decoding Error:
-      Key '\(codingKey)' not found
+      Key '\(codingKey.stringValue)' not found
       
       Context:
       \(context.debugDescription)  
-      
       Coding Path:
-      \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
+      \(context.codingPath.map{$0.stringValue}.joined(separator: "-> ")) 
       """
     case .dataCorrupted(let context):
       """
-      Data Corrupted:
+      Decoding Error:
+      Data corrupted
       
       Context:
       \(context.debugDescription)  
-      
       Coding Path:
-      \(context.codingPath.map{$0.stringValue}.joined(separator: "->")) 
+      \(context.codingPath.map{$0.stringValue}.joined(separator: "-> ")) 
       """
     @unknown default:
       """
-      Unknown error:
+      Decoding Error:
+      Unknown error
+      
       \(error.localizedDescription)
       """
-
     }
   } // func
 
 } // class
 
 
+
+//eof
 

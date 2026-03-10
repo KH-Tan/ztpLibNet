@@ -15,15 +15,16 @@ public enum ztpLoadingState {
 public class ztpDataService<T: Decodable> {
   public var loadingState: ztpLoadingState = .idle //***
   public var data: T?
+  public var networkError: ztpNetworkError? = nil
 
   let urlString: String
   private let configurator: ((JSONDecoder) -> Void)?
 
   private let netUtil = ztpNetworkUtility.self
-  public var networkError: ztpNetworkError? = nil
   //var isLoading: Bool = false
 
-  public init(urlString: String, configurator: ((JSONDecoder) -> Void)? = nil) {
+  public init(urlString: String,
+              configurator: ((JSONDecoder) -> Void)? = nil) {
     self.urlString = urlString
     self.configurator = configurator
   }
@@ -35,7 +36,7 @@ public class ztpDataService<T: Decodable> {
     //defer { isLoading = false }
 
     #if DEBUG
-    try? await Task.sleep(for: .seconds(1))
+    try? await Task.sleep(for: .seconds(0.5))
     #endif
 
     do {
@@ -43,11 +44,13 @@ public class ztpDataService<T: Decodable> {
         data = try await netUtil
           .fetchAndDecodeJSONthrows(from: urlString,
                                     configureDecoder: configurator)
+
         if data != nil { loadingState = .loaded } //***
 
       } else {
         data = try await netUtil
           .fetchAndDecodeJSONthrows(from: urlString)
+
         if data != nil { loadingState = .loaded } //***
 
       }
@@ -60,4 +63,6 @@ public class ztpDataService<T: Decodable> {
 
 
 
+
+//eof
 
