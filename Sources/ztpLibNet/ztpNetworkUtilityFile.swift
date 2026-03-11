@@ -8,7 +8,7 @@
 import Foundation
 
 
-public enum ztpTransportError: Error {
+public enum ztpNetworkTransportError: Error {
   case offline, timedOut, dnsFailure, tlsFailure,
        cannotConnect, cancelled, unknown
 
@@ -62,7 +62,7 @@ public enum ztpTransportError: Error {
 public enum ztpNetworkError: Error {
   case badURL,
        //request(String),
-       transport(ztpTransportError),
+       transport(ztpNetworkTransportError),
        httpResponse,
        httpStatusCode(Int),
        decodingError(String)
@@ -147,7 +147,7 @@ public enum ztpNetworkUtility {
         throw networkError
 
       } catch let urlError as URLError {
-        throw ztpNetworkError.transport(ztpTransportError(urlError: urlError))
+        throw ztpNetworkError.transport(ztpNetworkTransportError(urlError: urlError))
 
       } catch {
         throw ztpNetworkError.transport(.unknown)

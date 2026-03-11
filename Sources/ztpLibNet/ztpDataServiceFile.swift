@@ -7,13 +7,13 @@
 
 import Foundation
 
-public enum ztpLoadingState {
+public enum ztpDataServiceLoadingState {
   case idle, loading, loaded, failed
 }
 
 @Observable
 public class ztpDataService<T: Decodable> {
-  public var loadingState: ztpLoadingState = .idle //***
+  public var loadingState: ztpDataServiceLoadingState = .idle //***
   public var data: T?
   public var networkError: ztpNetworkError? = nil
 
