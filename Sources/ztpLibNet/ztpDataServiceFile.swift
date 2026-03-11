@@ -1,5 +1,5 @@
 //
-//  File 2.swift
+//  File2.swift
 //  ztpLibNet
 //
 //  Created by Kong Hwi Tan on 9/3/26.
@@ -13,6 +13,7 @@ public enum ztpDataServiceLoadingState {
 
 @Observable
 public class ztpDataService<T: Decodable> {
+
   public var loadingState: ztpDataServiceLoadingState = .idle //***
   public var data: T?
   public var networkError: ztpNetworkError? = nil
